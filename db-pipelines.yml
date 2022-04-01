@@ -17,7 +17,7 @@ stages:
 
       - task: VSBuild@1
         inputs:
-          solution: 'TALLMV_DB/TALLMV_DB.sqlproj'
+          solution: '**/*.sqlproj'
           platform: 'Any CPU'
           configuration: 'Release'
 
@@ -34,34 +34,34 @@ stages:
           ArtifactName: 'drop'
           publishLocation: 'Container'
 
-  
-  # - stage: devDatabase
-  #   pool: 'LYB Internal Agent Pool'
-  #   displayName: 'Deploy Dev dacpac'
-  #   variables:
-  #   - group: TALLMV.Dev.DBDetails
-  #   jobs:
-  #     - deployment: Deploy
-  #       environment: TALLMV_DEV_DB
-  #       strategy:
-  #         runOnce:
-  #           deploy:
-  #             steps:
+  # deploy to dev database 
+  - stage: devDatabase
+    pool: 'Internal Agent Pool'
+    displayName: 'Deploy Dev dacpac'
+    variables:
+    - group: project.Dev.DBDetails
+    jobs:
+      - deployment: Deploy
+        environment: DEV_DB
+        strategy:
+          runOnce:
+            deploy:
+              steps:
                  
-  #               - task: DownloadPipelineArtifact@2
-  #                 inputs:
-  #                   buildType: 'current'
-  #                   artifactName: 'drop'
-  #                   targetPath: '$(System.ArtifactsDirectory)'
-  #               - task: SqlAzureDacpacDeployment@1
-  #                 inputs:
-  #                   azureSubscription: 'lyb-nonprd-rg-tallmv-dev'
-  #                   AuthenticationType: 'server'
-  #                   ServerName: '$(DBServerName)'
-  #                   DatabaseName: '$(DBName)'
-  #                   SqlUsername: '$(sqluser)'
-  #                   SqlPassword: '$(sqlpwd)'
-  #                   deployType: 'DacpacTask'
-  #                   DeploymentAction: 'Publish'
-  #                   DacpacFile: '$(System.ArtifactsDirectory)/**/*.dacpac'
-  #                   IpDetectionMethod: 'AutoDetect'
+                - task: DownloadPipelineArtifact@2
+                  inputs:
+                    buildType: 'current'
+                    artifactName: 'drop'
+                    targetPath: '$(System.ArtifactsDirectory)'
+                - task: SqlAzureDacpacDeployment@1
+                  inputs:
+                    azureSubscription: '<name of subscription>'
+                    AuthenticationType: 'server' # you can use the service principal option as well 
+                    ServerName: '$(DBServerName)'
+                    DatabaseName: '$(DBName)'
+                    SqlUsername: '$(sqluser)'
+                    SqlPassword: '$(sqlpwd)'
+                    deployType: 'DacpacTask'
+                    DeploymentAction: 'Publish'
+                    DacpacFile: '$(System.ArtifactsDirectory)/**/*.dacpac'
+                    IpDetectionMethod: 'AutoDetect'
