@@ -1,0 +1,67 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger: none
+
+pool: 
+  vmImage: 'windows-2019'
+
+stages:
+  - stage: BuildDBSoln
+    jobs: 
+    - job: builddb
+      displayName: 'Build DB Proj'
+      steps:
+
+      - task: VSBuild@1
+        inputs:
+          solution: 'TALLMV_DB/TALLMV_DB.sqlproj'
+          platform: 'Any CPU'
+          configuration: 'Release'
+
+      - task: CopyFiles@2
+        inputs:
+          SourceFolder: '$(Build.SourcesDirectory)'
+          Contents: '**\*.dacpac'
+          TargetFolder: '$(build.artifactstagingdirectory)'
+          flattenFolders: true
+      
+      - task: PublishBuildArtifacts@1
+        inputs:
+          PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+          ArtifactName: 'drop'
+          publishLocation: 'Container'
+
+  
+  # - stage: devDatabase
+  #   pool: 'LYB Internal Agent Pool'
+  #   displayName: 'Deploy Dev dacpac'
+  #   variables:
+  #   - group: TALLMV.Dev.DBDetails
+  #   jobs:
+  #     - deployment: Deploy
+  #       environment: TALLMV_DEV_DB
+  #       strategy:
+  #         runOnce:
+  #           deploy:
+  #             steps:
+                 
+  #               - task: DownloadPipelineArtifact@2
+  #                 inputs:
+  #                   buildType: 'current'
+  #                   artifactName: 'drop'
+  #                   targetPath: '$(System.ArtifactsDirectory)'
+  #               - task: SqlAzureDacpacDeployment@1
+  #                 inputs:
+  #                   azureSubscription: 'lyb-nonprd-rg-tallmv-dev'
+  #                   AuthenticationType: 'server'
+  #                   ServerName: '$(DBServerName)'
+  #                   DatabaseName: '$(DBName)'
+  #                   SqlUsername: '$(sqluser)'
+  #                   SqlPassword: '$(sqlpwd)'
+  #                   deployType: 'DacpacTask'
+  #                   DeploymentAction: 'Publish'
+  #                   DacpacFile: '$(System.ArtifactsDirectory)/**/*.dacpac'
+  #                   IpDetectionMethod: 'AutoDetect'
