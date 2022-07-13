@@ -64,4 +64,5 @@ stages:
                     deployType: 'DacpacTask'
                     DeploymentAction: 'Publish'
                     DacpacFile: '$(System.ArtifactsDirectory)/**/*.dacpac'
+                    AdditionalArguments: '/p:ScriptDatabaseOptions=False /p:ignorePermissions=true' # incase you want to bypass dbserver level operation
                     IpDetectionMethod: 'AutoDetect'
